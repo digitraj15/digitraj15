@@ -1,44 +1,30 @@
 import { Resend } from "resend";
 import nodemailer from "nodemailer";
+import { z } from "zod";
 import { site } from "@/config/site";
 
-export type Lead = {
-  name: string;
-  email: string;
-  phone: string;
-  interest: string;
-  budget: string;
-  message: string;
-  page: string;
-};
+const text = (max: number) => z.string().trim().max(max).catch("");
 
-const LIMITS: Record<keyof Lead, number> = {
-  name: 100,
-  email: 200,
-  phone: 30,
-  interest: 100,
-  budget: 100,
-  message: 5000,
-  page: 300,
-};
+const LeadSchema = z.object({
+  name: z.string().trim().min(1, "Please add your name.").max(100),
+  email: z.string().trim().max(200).pipe(z.email("Please add a valid email.")),
+  phone: text(30),
+  interest: text(100),
+  budget: text(100),
+  message: z.string().trim().min(1, "Please add a short message.").max(5000),
+  page: text(300),
+  // Honeypot: real visitors never see or fill this field.
+  company: z.string().optional(),
+});
+
+export type Lead = Omit<z.infer<typeof LeadSchema>, "company">;
 
 /** Returns a clean Lead, or an error message for the visitor. */
 export function parseLead(input: unknown): { lead: Lead } | { error: string } {
-  if (!input || typeof input !== "object") return { error: "Invalid request." };
-  const raw = input as Record<string, unknown>;
-
-  // Honeypot: real visitors never see or fill this field.
-  if (typeof raw.company === "string" && raw.company.trim() !== "") return { error: "spam" };
-
-  const lead = {} as Lead;
-  for (const key of Object.keys(LIMITS) as (keyof Lead)[]) {
-    const value = typeof raw[key] === "string" ? (raw[key] as string).trim() : "";
-    lead[key] = value.slice(0, LIMITS[key]);
-  }
-
-  if (!lead.name) return { error: "Please add your name." };
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lead.email)) return { error: "Please add a valid email." };
-  if (!lead.message) return { error: "Please add a short message." };
+  const result = LeadSchema.safeParse(input);
+  if (!result.success) return { error: result.error.issues[0]?.message ?? "Invalid request." };
+  const { company, ...lead } = result.data;
+  if (company?.trim()) return { error: "spam" };
   return { lead };
 }
 

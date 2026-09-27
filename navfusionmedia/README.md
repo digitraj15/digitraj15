@@ -1,6 +1,8 @@
 # navfusionmedia.com
 
-Website for Nav Fusion Media. Built with Next.js (App Router) and TypeScript. Hosted on Vercel.
+Website for Nav Fusion Media. Built with Next.js (App Router), TypeScript and Tailwind CSS 4. Hosted on Vercel.
+
+Styles: `app/globals.css` holds the site's own styles. Tailwind is loaded there too, so you can use Tailwind classes in any component.
 
 ## What's where
 
@@ -42,6 +44,7 @@ Check before pushing:
 
 ```bash
 npm run typecheck
+npm run lint
 npm run build
 ```
 
@@ -164,3 +167,5 @@ Resend → Domains → `navfusionmedia.com` shows 2–3 records (usually `TXT` f
 
 - Google Search Console → add `navfusionmedia.com` → submit `https://navfusionmedia.com/sitemap.xml`.
 - Send a test lead from the live site and confirm it arrives by email and in the Sheet.
+
+**Note on HTTPS:** `next.config.mjs` sends a `Strict-Transport-Security` header with `includeSubDomains; preload`. Browsers will then refuse plain HTTP on navfusionmedia.com **and every subdomain** for 2 years. Only submit the domain to hstspreload.org once every subdomain you use serves HTTPS.

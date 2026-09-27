@@ -38,7 +38,7 @@ export const site = {
     whatsappMessage: "Hi Nav Fusion Media, I'd like to talk about a project.",
     // PLACEHOLDER — leave empty ("") to hide.
     phone: "",
-    city: "India",
+    city: "Delhi, India",
     hours: "Mon–Sat, 10am–7pm IST",
   },
 
